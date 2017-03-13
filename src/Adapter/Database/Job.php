@@ -1,7 +1,12 @@
 <?php
 
-namespace BasilFX\JobQueue\Adapter\Database;
+namespace BasilFX\JobQueue\Adapter\Database\Base;
 
-class Job extends Base\Job
+use Phalcon\Mvc\Model;
+
+/**
+ * Job model.
+ */
+class Job extends Model
 {
 }

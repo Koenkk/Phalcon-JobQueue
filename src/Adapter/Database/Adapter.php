@@ -2,8 +2,6 @@
 
 namespace BasilFX\JobQueue\Adapter\Database;
 
-use BasilFX\JobQueue\Adapter\Database\Job as Model;
-
 use BasilFX\JobQueue\AdapterInterface;
 use BasilFX\JobQueue\Exception;
 use BasilFX\JobQueue\Job;
@@ -24,10 +22,21 @@ class Adapter implements AdapterInterface
     private $lockID;
 
     /**
+     * The model to use.
+     *
+     * @var string
+     */
+    private $model = "BasilFX\\JobQueue\\Adapter\\Database\\Job";
+
+    /**
      * Construct a new database job queue adapter.
      */
-    public function __construct()
+    public function __construct($model = null)
     {
+        if ($model) {
+            $this->model = $model;
+        }
+
         $this->lockID = bin2hex(random_bytes(32));
     }
 
@@ -44,7 +53,7 @@ class Adapter implements AdapterInterface
      */
     public function getNext()
     {
-        $model = Model::findFirst([
+        $model = $this->model::findFirst([
             "conditions" => "state = ?0 AND lock IS NULL AND deleted IS NULL",
             "bind" => [Job::PENDING],
             "order" => "created ASC",
@@ -183,7 +192,7 @@ class Adapter implements AdapterInterface
     private function jobToModel($job, $model = null, $full = true)
     {
         if ($model === null) {
-            $model = new Model();
+            $model = new $this->model();
         }
 
         $model->setID($job->getID());
@@ -216,7 +225,7 @@ class Adapter implements AdapterInterface
      */
     private function getModel($jobID)
     {
-        $model = Model::findFirstByID($jobID);
+        $model = $this->model::findFirstByID($jobID);
 
         if (!$model || $model->getDeleted()) {
             throw new Exception("Job not found.");
