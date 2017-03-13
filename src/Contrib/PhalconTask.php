@@ -8,19 +8,20 @@ use BasilFX\JobQueue\Job;
 use BasilFX\JobQueue\Exception;
 
 /**
- * @description("Job queue tasks runner")
+ * Phalcon JobQueue related tasks.
  */
-class JobQueueTask extends Task
+class PhalconTask extends Task
 {
     /**
      * Start the job broker loop.
-     *
-     * @description("Spawn a new worker process to handle queued jobs")
      */
     public function mainAction()
     {
         $running = true;
-        echo "Starting worker task until. To interrupt, press CTRL + C.\n";
+        $success = 0;
+        $failed = 0;
+
+        echo "Starting worker task. To interrupt, press CTRL + C.\n";
 
         // This is the main loop that will poll for tasks and process them.
         while ($running) {
@@ -41,11 +42,13 @@ class JobQueueTask extends Task
                 $time = (microtime(true) - $start) * 1000;
 
                 echo "Job with ID {$job->getId()} finished in $time ms.\n";
+                $success++;
             } catch (\Exception $e) {
                 echo "Job with ID {$job->getId()} failed: {$e->getMessage()}.\n";
+                $failed++;
             }
         }
 
-        echo "Worker task stopped.\n";
+        echo "Worker task stopped, $success successful and $failed failed tasks processed.\n";
     }
 }
